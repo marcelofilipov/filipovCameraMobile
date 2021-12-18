@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity  } from 'react-native';
+
 import { Camera } from 'expo-camera';
+
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function App() {
 
+  const camRef = useRef(null)
   const [type, setType] = useState(Camera.Constants.Type.back)
   const [hasPermission, setHasPermission] = useState(null)
+  const [capturePhoto, setCapturePhoto] = useState(null)
 
   useEffect (() => {
     (async () => {
@@ -22,12 +27,38 @@ export default function App() {
     return <Text>Acesso Negado</Text>
   }
 
+  async function takePicture() {
+    if(camRef) {
+      const data = await camRef.current.takePictureAsync();
+      setCapturePhoto(data.uri);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Camera 
         style={styles.camera}
         type={type}
-      ></Camera>
+      >
+      <View style={styles.contentButtons}>
+        <TouchableOpacity
+          style={styles.buttonFlip}
+          onPress={() => {
+            setType(
+              type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back
+            )
+          }}
+        >
+          <FontAwesome name='exchange' size={23} color="red"/>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.buttonCamera}
+          onPress={takePicture}
+        >
+          <FontAwesome name='camera' size={23} color="#fff"/>
+        </TouchableOpacity>
+      </View>
+      </Camera>
     </SafeAreaView>
   );
 }
@@ -38,7 +69,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   camera: {
-    width:"100%",
-    height:"85%",
+    width: "100%",
+    height: "85%",
+  },
+  contentButtons: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+  },
+  buttonFlip: {
+    position: "absolute",
+    bottom: 50,
+    left: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    margin: 20,
+    height: 50,
+    width: 50,
+    borderRadius: 45,
+  },
+  buttonCamera: {
+    position: "absolute",
+    bottom: 50,
+    right: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'red',
+    margin: 20,
+    height: 50,
+    width: 50,
+    borderRadius: 45,
   }
 });
